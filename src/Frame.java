@@ -1,16 +1,10 @@
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.awt.*;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Frame extends JFrame implements ActionListener{
 	
@@ -18,133 +12,177 @@ public class Frame extends JFrame implements ActionListener{
 	
 	 Container cp;
 	 JButton sendButton;
-	 JTextField serverDomainField;
+	 JTextField serverDomainField, smtpDomainField, usernameField, sentFromField, sentDateField, subjectField, passwordField;
 	 JTextField smtpPortField;
-	 JTextField usernameField;
-	 JTextField sentFromField;
-	 JTextField sentDateField;
-	 JTextField subjectField;
-	 JPasswordField passwordField;
 	 JTextArea messageBodyArea;
-	 JPanel fieldPanel;
-	 JPanel buttonPanel;
-	 JPanel textAreaPanel;
-	 JLabel domainLabel;
-	 JLabel portLabel;
-	 JLabel usernameLabel;
-	 JLabel sentFromLabel;
-	 JLabel setnDateLabel;
-	 JLabel passwordLabel;
-	 JLabel messageAreaLabel;
+	 JPanel fieldPanel, buttonPanel;
+	 JLabel domainLabel, portLabel, usernameLabel, sentFromLabel, sentDateLabel, passwordLabel, messageAreaLabel, subjectLabel;
+	 String server,  port, user, sent, date, subject, pass, message;
+	 int portInt;
 	 static String senderDomain= "smtp.gmx.com";
 	 static String senderUsername = "larue@gmx.us";
 	 static String senderPassword = "larue321";
-	 static String portNUmber = "465";
+	 static String portNumber = "465";
+	 RightClick r = new RightClick();
+	 Grid grid = new Grid();
 
+	 
 	
 	public Frame(){
 		
 		sendButton = new JButton("Send");
 		sendButton.addActionListener(this);
 		sendButton.setActionCommand("Send");
+		sendButton.setEnabled(false);
 		
 		serverDomainField = new JTextField(20);
+		serverDomainField.setText(senderDomain);
+		serverDomainField.requestFocus();
+		
 		smtpPortField = new JTextField(20);
 		smtpPortField.setInputVerifier(new Validation());
+		smtpPortField.setText(portNumber);
+		
 		usernameField = new JTextField(20);
+		usernameField.setText(senderUsername);
+		
 		passwordField = new JPasswordField(20);
+		passwordField.setText(senderPassword);
+		
 		sentFromField = new JTextField(20);
 		sentDateField = new JTextField(20);
 		subjectField = new JTextField(20);
-		messageBodyArea = new JTextArea();
+		messageBodyArea = new JTextArea(100,100);
+		JScrollPane scrollPane = new JScrollPane(messageBodyArea);  
 		
+		domainLabel = new JLabel("Domain: ");
+		portLabel = new JLabel("Port: ");
+		usernameLabel = new JLabel("Username: ");
+		sentFromLabel = new JLabel("Sent From: ");
+		sentDateLabel = new JLabel("Date: ");
+		passwordLabel = new JLabel("Password: ");
+		messageAreaLabel = new JLabel("Message: ");
+		subjectLabel = new JLabel("Subject: ");
+		
+		// Adds Right Click Functionality to all Fields
+		RightClick.rightClick(serverDomainField);
+		RightClick.rightClick(smtpPortField);
+		RightClick.rightClick(usernameField);
+		RightClick.rightClick(sentFromField);
+		RightClick.rightClick(sentDateField);
+		RightClick.rightClick(subjectField);
+		RightClick.rightClick(passwordField);
+		RightClick.textArea(messageBodyArea);
+	
 		fieldPanel = new JPanel(new GridBagLayout());
-		textAreaPanel = new JPanel(new FlowLayout());
 		buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); 
 		
-		GridBagConstraints gbc = new GridBagConstraints();
-		 
-			gbc.insets = new Insets(4, 4, 4, 4);
+		// GUI Placement
+		grid.makingGrid(fieldPanel, serverDomainField, smtpPortField, usernameField, passwordField, sentFromField, sentDateField, subjectField, 
+				domainLabel, portLabel, usernameLabel, passwordLabel, sentFromLabel, sentDateLabel,  subjectLabel);
+		
+			buttonPanel.add(sendButton);
 
-			gbc.gridx = 0;
-			gbc.gridy = 0;
-			gbc.weightx = 1;
-			fieldPanel.add(domainLabel, gbc);
-
-			gbc.gridx = 1;
-			gbc.gridy = 0;
-			gbc.weightx = 1;
-			fieldPanel.add(serverDomainField, gbc);
-
-			gbc.gridx = 0;
-			gbc.gridy = 1;
-			gbc.weightx = 1;
-			fieldPanel.add(portLabel, gbc);
-
-			gbc.gridx = 1;
-			gbc.gridy = 1;
-			gbc.weightx = 1;
-			fieldPanel.add(smtpPortField, gbc);
-			
-			gbc.gridx = 0;
-			gbc.gridy = 2;
-			gbc.gridwidth = 1;
-			fieldPanel.add(usernameLabel, gbc);
-			
-			gbc.gridx = 1;
-			gbc.gridy = 2;
-			gbc.weightx = 1;
-			fieldPanel.add(usernameField, gbc);
-			
-			gbc.gridx = 0;
-			gbc.gridy = 3;
-			gbc.gridwidth = 1;
-			fieldPanel.add(passwordLabel, gbc);
-			
-			gbc.gridx = 1;
-			gbc.gridy = 3;
-			gbc.weightx = 1;
-			fieldPanel.add(passwordField, gbc);
-			// changes positions from here down, not in alignment
-			gbc.gridx = 2;
-			gbc.gridy = 3;
-			gbc.weightx = 1;
-			fieldPanel.add(sentFromLabel, gbc);
-			
-			gbc.gridx = 3;
-			gbc.gridy = 3;
-			gbc.weightx = 1;
-			fieldPanel.add(sentFromField, gbc);
-
-			buttonPanel.add(saveButton);
-			buttonPanel.add(cancelButton);
-			
-		 cp = getContentPane();
-		 cp.add(fieldPanel, BorderLayout.WEST);
-		 cp.add(buttonPanel, BorderLayout.SOUTH);
-		 
-	
-				
 		cp = getContentPane();
 		cp.setSize(900, 900);
 		
-		cp.add(fieldPanel, BorderLayout.NORTH);
-		cp.add(textAreaPanel, BorderLayout.CENTER);
+		cp.add(fieldPanel, BorderLayout.WEST);
+		cp.add(scrollPane, BorderLayout.CENTER);
 		cp.add(buttonPanel, BorderLayout.SOUTH);
 		setUp();
 		
-		 addWindowListener( new WindowAdapter() {
-	    	    public void windowOpened( WindowEvent e ){
-	    	       // urlField.requestFocus();
-	    	    }
-	    	}); 
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+//------------------------  Using Listener to disable send button untl all fields are filled.	
 		
+		
+		 serverDomainField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 smtpPortField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 usernameField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 passwordField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 sentFromField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 sentDateField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+		 subjectField.getDocument().addDocumentListener(new DocumentListener(){
+			  public void changedUpdate(DocumentEvent e){checkLength();}
+			  public void removeUpdate(DocumentEvent e){checkLength();}
+			  public void insertUpdate(DocumentEvent e){checkLength();}
+			});
+
 	}
+	
+	public void checkLength(){
+		
+		int count = 0;
+		
+		if(serverDomainField.getDocument().getLength() > 0){
+				count++;		}
+		if(smtpPortField.getDocument().getLength() > 0){
+			count++;		}
+		if(usernameField.getDocument().getLength() > 0){
+			count++;		}
+		if(passwordField.getDocument().getLength() > 0){
+			count++;		}
+		if(sentFromField.getDocument().getLength() > 0){
+			count++;		}
+		if(sentDateField.getDocument().getLength() > 0){
+			count++;		}
+		if(subjectField.getDocument().getLength() > 0){
+			count++;		}
+		
+		if ( count == 7){
+			
+			sendButton.setEnabled(true);
+		}
+		
+		else { sendButton.setEnabled(false); }
+	}
+	
+//---------------------------------------------------------------------------------------
+	  
+	@Override
+	public void actionPerformed(ActionEvent AE) {
+		
+		 server = serverDomainField.getText().trim();
+		 port = smtpPortField.getText().trim();
+		 portInt = Integer.parseInt(port);
+		 user = usernameField.getText().trim();
+		 sent = sentFromField.getText().trim();
+		 date = sentDateField.getText().trim();
+		 subject = subjectField.getText().trim();
+		 pass = passwordField.getText().trim();
+		 message = messageBodyArea.getText().trim();
+		 
+		 if(AE.getActionCommand().equals("Send")){
+			 
+			 System.out.println("here");
+			 
+		 }
+			
+	}
+	
+
 	
 	 void setUp ()
 	 {
@@ -156,9 +194,9 @@ public class Frame extends JFrame implements ActionListener{
 	     tk = Toolkit.getDefaultToolkit ();
 	     d = tk.getScreenSize ();
 	     
-	     setSize (d.width/2, d.height/2);
+	     setSize (d.width/3, d.height/3);
 	     setLocation (d.width/4, d.height/4);
-	     setTitle ("Image Finder");
+	     setTitle ("Squatch Mail");
 	     setVisible (true);
 	 	}
 
