@@ -1,9 +1,20 @@
 
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.awt.*;
 import java.*;
 import java.util.*;
+import java.util.List;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -17,7 +28,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Frame extends JFrame implements ActionListener{
+public class Frame extends JFrame implements ActionListener, DocumentListener{
 	
 	// Data Members
 	
@@ -28,17 +39,15 @@ public class Frame extends JFrame implements ActionListener{
 	 JTextArea messageBodyArea;
 	 JPanel fieldPanel, buttonPanel;
 	 JLabel domainLabel, portLabel, usernameLabel, sentFromLabel, sentDateLabel, passwordLabel, messageAreaLabel, subjectLabel;
-	 static String server,  port, user, sent, date, subject, pass, messageFromArea;
+	 static String server,  port, user, sent, subject, pass, messageFromArea;
 	 static  int portInt;
-	 static String senderDomain= "smtp.gmx.com";
-	 static String senderUsername = "SquatchRage@gmx.com";
+	 static String senderDomain= "smtp.gmail.com";
+	 static String senderUsername = "SquatchRage@gmail.com";
 	 static String senderPassword = "myPassword123!";
 	 static String portNumber = "465";
-	 RightClick r = new RightClick();
+	 String dateField = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
 	 Grid grid = new Grid();
 
-	 
-	
 	public Frame(){
 		
 		sendButton = new JButton("Send");
@@ -62,6 +71,7 @@ public class Frame extends JFrame implements ActionListener{
 		
 		sentFromField = new JTextField(20);
 		sentDateField = new JTextField(20);
+		sentDateField.setText(dateField);
 		subjectField = new JTextField(20);
 		messageBodyArea = new JTextArea(100,100);
 		JScrollPane scrollPane = new JScrollPane(messageBodyArea);  
@@ -75,15 +85,6 @@ public class Frame extends JFrame implements ActionListener{
 		messageAreaLabel = new JLabel("Message: ");
 		subjectLabel = new JLabel("Subject: ");
 		
-		// Adds Right Click Functionality to all Fields
-		RightClick.rightClick(serverDomainField);
-		RightClick.rightClick(smtpPortField);
-		RightClick.rightClick(usernameField);
-		RightClick.rightClick(sentFromField);
-		RightClick.rightClick(sentDateField);
-		RightClick.rightClick(subjectField);
-		RightClick.rightClick(passwordField);
-		RightClick.textArea(messageBodyArea);
 	
 		fieldPanel = new JPanel(new GridBagLayout());
 		buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); 
@@ -105,43 +106,19 @@ public class Frame extends JFrame implements ActionListener{
 //------------------------  Using Listener to disable send button untl all fields are filled.	
 		
 		
-		 serverDomainField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 smtpPortField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 usernameField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 passwordField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 sentFromField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 sentDateField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
-		 subjectField.getDocument().addDocumentListener(new DocumentListener(){
-			  public void changedUpdate(DocumentEvent e){checkLength();}
-			  public void removeUpdate(DocumentEvent e){checkLength();}
-			  public void insertUpdate(DocumentEvent e){checkLength();}
-			});
+		 serverDomainField.getDocument().addDocumentListener(this);
+		 smtpPortField.getDocument().addDocumentListener(this);
+		 usernameField.getDocument().addDocumentListener(this);
+		 passwordField.getDocument().addDocumentListener(this);
+		 sentFromField.getDocument().addDocumentListener(this);
+		 sentDateField.getDocument().addDocumentListener(this);
+		 subjectField.getDocument().addDocumentListener(this);
 
 	}
+	
+	public void changedUpdate(DocumentEvent e){checkLength();fieldCheck();}
+	public void removeUpdate(DocumentEvent e){checkLength();}
+	public void insertUpdate(DocumentEvent e){checkLength();}
 	
 	public void checkLength(){
 		
@@ -168,40 +145,57 @@ public class Frame extends JFrame implements ActionListener{
 		}
 		
 		else { sendButton.setEnabled(false); }
+		
 	}
-	
+	// does some regex checking on the fields...Calling sendMail() from here so the user cannot click the button unless form is correct
+	public void fieldCheck() {
+		
+	       if(!serverDomainField.getText().matches("(?i)(\\w+)\\.(\\w+)\\.(com|gov|us|edu)")){
+	           JOptionPane.showMessageDialog(null, "Server field not in correct format!"); 
+
+	    	   }
+	    	 
+	       else if(!usernameField.getText().matches("(?i)[A-Z0-9]+@[A-Z0-9]+\\.(com|gov|us|edu)")){
+	           JOptionPane.showMessageDialog(null, "User field not in correct format!"); 
+	        } else
+			try {
+				sendMail();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        
+    
+	    }
+
 //---------------------------------------------------------------------------------------
 	  
 	@Override
 	public void actionPerformed(ActionEvent AE) {
 		
 		 server = serverDomainField.getText().trim();
+		 System.out.println(server);
 		 port = smtpPortField.getText().trim();
 		 portInt = Integer.parseInt(port);
 		 user = usernameField.getText().trim();
 		 sent = sentFromField.getText().trim();
-		 date = sentDateField.getText().trim();
 		 subject = subjectField.getText().trim();
 		 pass = passwordField.getText().trim();
 		 messageFromArea = messageBodyArea.getText().trim();
 		 
+		
 		 if(AE.getActionCommand().equals("Send")){
-			 try {
-				sendMail();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-				//System.out.println(Arrays.toString(InputOutput.arr));
-
-			 
-		 }
 			
+			
+				fieldCheck();
+		
+		 }
 	}
 	
+
 	public void sendMail () throws IOException{
 		
-		InputOutput.readIn();
+		//fr =  new FileWriter("badEmails.txt");
 		
 		MyMailAuthenticator authenticator;
 		Properties sessionProperties;
@@ -219,45 +213,121 @@ public class Frame extends JFrame implements ActionListener{
 		sessionProperties.put("mail.smtp.port", portInt);
 		sessionProperties.put("mail.stmp.ssl.enable", "true");
 		sessionProperties.put("mail.tranport.protocol", "smtps");
-		
 		session = Session.getDefaultInstance(sessionProperties, authenticator);
 		session.setDebug(true);
 		System.out.println("got a session");
 		
-		int temp = InputOutput.arr.length;
-		
-		try{
-			
-			message = new MimeMessage(session);
-
-			message.setFrom(new InternetAddress(senderUsername));
-			InternetAddress[] toAddress = new InternetAddress[temp];
-			for(int i = 0; i < temp; i++){
 				
-				toAddress[i] = new InternetAddress( InputOutput.arr[i]);
-			}
-			
-			for(int i = 0; i < toAddress.length; i++){
-			message.addRecipient(Message.RecipientType.TO, toAddress[i]);} 
-			message.setSubject (subject);
-			message.setText(messageFromArea);
-			message.setSentDate(new GregorianCalendar(201,1,1).getTime());  
+		//creating a new files for the file readin, and write operations. , adding them to a DefualtListModel
+		InternetAddress[] address;
+		File file = new File("emails.txt");
+		File goodEmail = new File("goodEmail.txt");
+		File badEmail = new File("badEmail.txt");
+		String email;
+		DefaultListModel<String> goodEmails,badEmails;
+		goodEmails = new DefaultListModel<String>();
+		badEmails = new DefaultListModel<String>();
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+	     
+	     
+		//if emails.txt exits, save them to string; as long as email is not empty, send messages.
+		if(file.exists()){
+		email = br.readLine();
+		while(email != null){
 		
+			try{
 			
-			Transport.send(message);
-			System.out.println("Message sent" );
-		}
-		catch (MessagingException e){
-				throw new RuntimeException (e);
-			} 
-		
-		}	
-	
-	
-	
-	
+				message = new MimeMessage(session);
 
+				message.setFrom(new InternetAddress(senderUsername));
+				address =InternetAddress.parse(email);
+				address[0].validate();
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
+				message.setSubject (subject);
+				message.setText(messageFromArea);
+				message.setSentDate(new GregorianCalendar(2010,1,1).getTime());  
+				Transport.send(message);
+				goodEmails.addElement(email);
+				email = br.readLine();
+				
+			
+				
+			} catch (MessagingException e) {
+				badEmails.addElement(email);
+				
+				email = br.readLine();
+			
+		}
+	}
+		//writing outMail. 
+		 PrintWriter outEmail = new PrintWriter(goodEmail);
+			for(int i=0;i<goodEmails.size();i++)
+			{
+				outEmail.println(goodEmails.getElementAt(i));
+				System.out.println("Out file is writing.");
+			}
+			outEmail.close();
+			outEmail = new PrintWriter(badEmail);
+			for(int i=0;i<badEmails.size();i++)
+			{
+				outEmail.println(badEmails.getElementAt(i));
+				System.out.println("Not writing out");
+			}
+			outEmail.close();
+		}
+			System.out.println("Message sent" );
+			
+	}
 	
+	/*
+	
+	void saveBadEmail(String[] arr){
+		
+		   try{
+		          FileWriter fr = new FileWriter("badEmails.txt");
+		          BufferedWriter br = new BufferedWriter(fr);
+		          PrintWriter out = new PrintWriter(br);
+		          for(int i=0; i<arr.length; i++){
+		              if(arr[i] != null)
+		                   
+		            out.write(arr[i].toString());
+		                out.write("\n");       
+		          }
+		          out.close();
+		           
+		           
+		      }
+		       
+		      catch(IOException e){
+		       System.out.println(e);   
+		      }
+		
+	}
+	
+	void saveGoodEmail(){
+		
+		   try{
+		          FileWriter fr = new FileWriter("goodEmails.txt");
+		          BufferedWriter br = new BufferedWriter(fr);
+		          PrintWriter out = new PrintWriter(br);
+		          for(int i=0; i<toAddress.length; i++){
+		              if(toAddress[i] != null)
+		                   
+		            out.write(toAddress[i].toString());
+		                out.write("\n");       
+		          }
+		          out.close();
+		           
+		           
+		      }
+		       
+		      catch(IOException e){
+		       System.out.println(e);   
+		      }
+		
+	}
+		*/
+
 	 void setUp ()
 	 {
 	     Toolkit tk;

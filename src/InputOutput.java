@@ -10,60 +10,24 @@ import java.util.stream.Stream;
 
 public class InputOutput {
 	
-	static int count = 0;
 	static String arr[];
+	final static String fileName = "emails.txt";
 	
 	public static void readIn() throws IOException{
 		
-		String fileName = "EmailList.txt";
-		
-/*
-		//read file into stream, try-with-resources
-		try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+	Scanner sc = new Scanner(new File(fileName));
+	List<String> lines = new ArrayList<String>();
+	while (sc.hasNextLine()) {
 
-			
-			stream.forEach(System.out::println);
-			System.out.println(stream);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	
-*/
-		
-		Scanner sc = new Scanner(new File(fileName));
-		List<String> lines = new ArrayList<String>();
-		while (sc.hasNextLine()) {
-			count++;
-		  lines.add(sc.nextLine());
-		arr = lines.toArray(new String[0]);
+	  lines.add(sc.nextLine());
+	arr = lines.toArray(new String[0]);
 
 
 
 		}
-
-		System.out.println(count + "I AM COUNT"); // Counts twice
-		System.out.println(Arrays.toString(arr)); // print to screen, the email list
-		
-	       
-	/*	try (BufferedReader br = new BufferedReader(new FileReader(fileName)))
-     {
-
-         String currentEmailAddress;
-
-         while ((currentEmailAddress = br.readLine()) != null) 
-         {
-             mailingList.add(currentEmailAddress);
-             System.out.println("I am list on the mailing list " + mailingList);
-         }
-
-     } catch (IOException e) {
-         e.printStackTrace();
-     } */
-
-
-		 
 	
-		 
+
 	}
+
+	
 }

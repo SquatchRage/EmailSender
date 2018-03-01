@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -42,7 +44,7 @@ public class Validation extends InputVerifier {
          
         if(type == false){ 
      
-            JOptionPane.showMessageDialog(null, "Integer values between 20-3600 only!"); 
+            JOptionPane.showMessageDialog(null, "Integer values between 0-65535 only!"); 
          
         } 
          
@@ -50,6 +52,7 @@ public class Validation extends InputVerifier {
         return type; 
          
     	}
+	
 	
 	
     }
